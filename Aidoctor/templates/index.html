@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='title.png') }}" />
+  <title>Vite + React</title>
+  <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .navbar {
+      background-color: #e5e5e5;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 170px;
+      padding: 0;
+    }
+
+    .navbar-left img {
+      width: 150px;
+    }
+
+    .navbar-left a,
+    .navbar-right a {
+      color: black;
+      text-decoration: none;
+      font-size: 22px;
+      padding: 14px 20px;
+    }
+
+    .navbar-right a:hover,
+    .navbar-left a:hover {
+      background-color: #34495e;
+      border-radius: 5px;
+    }
+
+    .scroll-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 20px;
+    }
+
+    .container {
+      width: 60%;
+      margin: 50px auto;
+      padding: 30px;
+      background-color: #cedff7;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title,
+    h2,
+    h3 {
+      text-align: center;
+      color: #333;
+    }
+
+    .prediction-form {
+      margin-bottom: 20px;
+    }
+
+    .symptom-input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+    }
+
+    .btn {
+      margin-top: 50px;
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: black;
+      color: white;
+      font-size: 22px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      height: 80px;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    .result {
+      margin-top: 30px;
+    }
+
+    .card {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin: 20px 0;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+
+    .card ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .card li {
+      margin: 10px 0;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+    }
+
+    .footer {
+      background-color: #e5e5e5;
+      color: black;
+      padding: 40px 0 0;
+    }
+
+    .footer hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-section {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .footer-section h4 {
+      margin-bottom: 15px;
+      font-size: 18px;
+      border-bottom: 2px solid black;
+      padding-bottom: 5px;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 8px;
+    }
+
+    .footer-section ul li a {
+      color: black;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-section ul li a:hover {
+      color: #45a049;
+    }
+
+    .footer-section div {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-img {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="navbar-left">
+      <img src="/static/logo.png" alt="nhi hui">
+    </div>
+    <div class="navbar-right">
+      <a href="http://localhost:5173/">Home</a>
+      <a href="http://localhost:5173/appointment">Appointment</a>
+      <a href="http://localhost:5173/about">About Us</a>
+    </div>
+  </nav>
+
+  <div class="scroll-container">
+    <div class="container">
+      <h1 class="page-title">AI Doctor</h1>
+
+      {% if message %}
+        <p class="error">{{ message }}</p>
+      {% endif %}
+
+      <form action="/predict" method="POST" class="prediction-form">
+        <label for="symptoms">Enter Symptoms (comma-separated):</label>
+        <input type="text" name="symptoms" id="symptoms" class="symptom-input" placeholder="E.g. fever, cough, headache" required>
+        <button type="submit" class="btn">Predict Disease</button>
+      </form>
+
+      {% if predicted_disease %}
+        <div class="result">
+          <h2 class="result-title">Predicted Disease: {{ predicted_disease }}</h2>
+          <p><strong>Description:</strong> {{ dis_des }}</p>
+
+          <div class="card">
+            <h3>Precautions</h3>
+            <ul>
+              {% for precaution in my_precautions %}
+                <li>{{ precaution }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Recommended Medications</h3>
+            <ul>
+              {% for medication in medications %}
+                <li>{{ medication }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Recommended Diet</h3>
+            <ul>
+              {% for diet in my_diet %}
+                <li>{{ diet }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Recommended Workout</h3>
+            <ul>
+              {% for exercise in workout %}
+                <li>{{ exercise }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <footer class="footer">
+    <hr />
+    <div class="footer-content">
+      <div class="footer-section logo">
+        <img src="static/logo.png" alt="logo" class="logo-img" />
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/appointment">Appointment</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Hours</h4>
+        <ul>
+          <li><span>Monday:</span> <span>9:00 AM - 11:00 PM</span></li>
+          <li><span>Tuesday:</span> <span>12:00 PM - 12:00 AM</span></li>
+          <li><span>Wednesday:</span> <span>10:00 AM - 10:00 PM</span></li>
+          <li><span>Thursday:</span> <span>9:00 AM - 9:00 PM</span></li>
+          <li><span>Friday:</span> <span>3:00 PM - 9:00 PM</span></li>
+          <li><span>Saturday:</span> <span>9:00 AM - 3:00 PM</span></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <div><span>📞</span> <span>999-999-9999</span></div>
+        <div><span>📧</span> <span>yk829054@gmail.com</span></div>
+        <div><span>📍</span> <span>Alwar, Rajasthan</span></div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
